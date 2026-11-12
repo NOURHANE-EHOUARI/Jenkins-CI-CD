@@ -39,21 +39,39 @@ pipeline {
         }
 
         stage('Run Tests') {
-            steps {
-                // Run the tests with pytest and generate a coverage report
-                sh '''
-                    . ${VENV_DIR}/bin/activate
-                    mkdir -p reports
-                    python -m pytest test_app.py -v \
-                        --cov=app --cov-report=term-missing --cov-report=xml:reports/coverage.xml \
-                        --junitxml=reports/test_app.xml
-                '''
-            }
-            post {
-                always {
-                    // Display the test results in Jenkins and keep the reports
-                    junit 'reports/test_*.xml'
-                    archiveArtifacts artifacts: 'reports/*.xml', allowEmptyArchive: true
+            // Part 6: run the two test files in parallel
+            parallel {
+                stage('Tests test_app.py') {
+                    steps {
+                        sh '''
+                            . ${VENV_DIR}/bin/activate
+                            mkdir -p reports
+                            COVERAGE_FILE=.coverage.app1 python -m pytest test_app.py -v \
+                                --cov=app --cov-report=term-missing --cov-report=xml:reports/coverage_app.xml \
+                                --junitxml=reports/test_app.xml
+                        '''
+                    }
+                    post {
+                        always {
+                            junit 'reports/test_app.xml'
+                        }
+                    }
+                }
+                stage('Tests test_app_2.py') {
+                    steps {
+                        sh '''
+                            . ${VENV_DIR}/bin/activate
+                            mkdir -p reports
+                            COVERAGE_FILE=.coverage.app2 python -m pytest test_app_2.py -v \
+                                --cov=app --cov-report=term-missing --cov-report=xml:reports/coverage_app_2.xml \
+                                --junitxml=reports/test_app_2.xml
+                        '''
+                    }
+                    post {
+                        always {
+                            junit 'reports/test_app_2.xml'
+                        }
+                    }
                 }
             }
         }
