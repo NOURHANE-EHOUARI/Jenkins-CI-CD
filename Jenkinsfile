@@ -9,6 +9,12 @@ pipeline {
         APP_MODULE   = 'app:app'
     }
 
+    // Part 5: build every 5 minutes (cron) and on every GitHub push (webhook)
+    triggers {
+        cron('H/5 * * * *')
+        githubPush()
+    }
+
     stages {
         stage('Checkout') {
             steps {
