@@ -39,6 +39,12 @@ pipeline {
         }
 
         stage('Run Tests') {
+            // Part 7: skip the tests when the commit only changes README.md
+            when {
+                not {
+                    changeset 'README.md'
+                }
+            }
             // Part 6: run the two test files in parallel
             parallel {
                 stage('Tests test_app.py') {
